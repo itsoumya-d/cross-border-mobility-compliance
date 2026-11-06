@@ -1,0 +1,32 @@
+:root {
+  --wf-navy: #0b1e3a;
+  --wf-blue: #2563eb;
+  --wf-teal: #0e7490;
+  --radius: 12px;
+  --font: "Switzer", "General Sans", "Inter", system-ui, sans-serif;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: var(--font);
+  color: var(--wf-navy);
+  background: #f8fafc;
+  -webkit-font-smoothing: antialiased;
+}
+h1 { letter-spacing: -0.02em; line-height: 1.1; }
+.card {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: var(--radius);
+  padding: 16px;
+  margin: 12px 0;
+}
+.badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #eff6ff;
+  color: var(--wf-blue);
+  font-size: 12px;
+  font-weight: 600;
+}
