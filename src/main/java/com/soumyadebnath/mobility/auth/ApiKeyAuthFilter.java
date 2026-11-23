@@ -11,14 +11,18 @@ import java.io.IOException;
 import java.util.Set;
 
 /**
- * API-key + OAuth2-client-credentials compatible guard.
- * Mirrors the public WorkFlex Open-API contract (POST /oauth/token,
- * GET /status) while allowing public health checks.
+ * Trust & Identity Auth Filter supporting API-key and OIDC Bearer tokens.
+ * Validates OIDC JWT tokens and client credentials against security contracts.
  */
 @Component
 public class ApiKeyAuthFilter extends OncePerRequestFilter {
 
     private static final Set<String> PUBLIC_PATHS = Set.of("/actuator/health");
+    private final OidcTokenValidator tokenValidator;
+
+    public ApiKeyAuthFilter(OidcTokenValidator tokenValidator) {
+        this.tokenValidator = tokenValidator;
+    }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
@@ -28,8 +32,27 @@ public class ApiKeyAuthFilter extends OncePerRequestFilter {
             filterChain.doFilter(request, response);
             return;
         }
-        // In this reference implementation the key is optional for local
-        // development but enforced when the MOBILITY_API_KEY env var is set.
+
+        String authHeader = request.getHeader("Authorization");
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            String token = authHeader.substring(7).trim();
+            try {
+                String expectedIss = System.getenv("OIDC_ISSUER");
+                String expectedAud = System.getenv("OIDC_AUDIENCE");
+                OidcTokenClaims claims = tokenValidator.validateAndExtract(token, expectedIss, expectedAud);
+                request.setAttribute("auth.claims", claims);
+                request.setAttribute("auth.subject", claims.getSubject());
+                filterChain.doFilter(request, response);
+                return;
+            } catch (Exception e) {
+                response.setStatus(401);
+                response.setHeader("WWW-Authenticate", "Bearer error=\"invalid_token\", error_description=\"" + e.getMessage() + "\"");
+                response.getWriter().write("Unauthorized: Invalid Bearer token - " + e.getMessage());
+                return;
+            }
+        }
+
+        // Fallback to API Key when Bearer token is not supplied
         String expected = System.getenv("MOBILITY_API_KEY");
         String provided = request.getHeader("X-API-Key");
         if (expected != null && !expected.isBlank()) {
