@@ -1,0 +1,51 @@
+{
+  "country": "SG",
+  "country_name": "Singapore",
+  "regulatory_authorities": [
+    "Ministry of Manpower (MOM)",
+    "Inland Revenue Authority of Singapore (IRAS)"
+  ],
+  "rules_as_of": "2026-11-28",
+  "rules": [
+    {
+      "id": "SG-MOM-EP-SALARY-001",
+      "decision": "Employment Pass (EP) minimum qualifying monthly salary threshold",
+      "metric": "minimum_monthly_salary_sgd",
+      "threshold_value": 5600,
+      "financial_services_threshold_sgd": 6200,
+      "currency": "SGD",
+      "category": "immigration_work_pass",
+      "source_url": "https://www.mom.gov.sg/passes-and-permits/employment-pass/eligibility",
+      "checked_on": "2026-11-28",
+      "description": "Candidates must earn at least SGD 5,600 per month (increasing progressively up to SGD 10,700 for older candidates) to qualify for an Employment Pass."
+    },
+    {
+      "id": "SG-MOM-COMPASS-POINTS-002",
+      "decision": "COMPASS points-based evaluation framework threshold",
+      "metric": "minimum_compass_points",
+      "threshold_value": 40,
+      "category": "immigration_work_pass",
+      "foundational_criteria": [
+        "C1_Salary",
+        "C2_Qualifications",
+        "C3_Diversity",
+        "C4_Support_for_Local_Employment"
+      ],
+      "source_url": "https://www.mom.gov.sg/passes-and-permits/employment-pass/eligibility/compass",
+      "checked_on": "2026-11-28",
+      "description": "Employment Pass applications must score at least 40 points on the Complementarity Assessment Framework (COMPASS) to pass the points criteria."
+    },
+    {
+      "id": "SG-IRAS-TAX-EXPOSURE-003",
+      "decision": "Non-resident employment income tax exemption (60-day short-term mobility rule)",
+      "metric": "max_exempt_days_in_calendar_year",
+      "threshold_value": 60,
+      "category": "tax_exposure",
+      "rate_for_61_to_182_days": "15% flat or progressive resident rates, whichever yields higher tax",
+      "residency_threshold_days": 183,
+      "source_url": "https://www.iras.gov.sg/taxes/individual-income-tax/basics-of-individual-income-tax/tax-residency-and-tax-rates/individual-income-tax-rates",
+      "checked_on": "2026-11-28",
+      "description": "Non-residents exercising employment in Singapore for 60 days or less in a calendar year are exempt from tax. Stays between 61 and 182 days are subject to non-resident taxation."
+    }
+  ]
+}
