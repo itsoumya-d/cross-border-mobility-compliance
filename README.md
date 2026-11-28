@@ -1,6 +1,6 @@
 # Cross-Border Mobility Compliance
 
-A production-oriented reference for global-mobility compliance: A1 / Certificate of Coverage (CoC), Posted Worker Notification (PWN), visa & immigration, permanent-establishment risk, tax exposure and duty of care — the exact dimensions WorkFlex models in its public compliance handbook.
+A production-oriented reference for global-mobility compliance: A1 / Certificate of Coverage (CoC), Posted Worker Notification (PWN), visa & immigration, permanent-establishment risk, tax exposure, duty of care, and modular Country Packs (e.g. Singapore MOM/IRAS) — the exact dimensions WorkFlex models in its public compliance handbook.
 
 ## Stack (exact JD parity)
 
@@ -8,6 +8,22 @@ A production-oriented reference for global-mobility compliance: A1 / Certificate
 - **Frontend:** Angular 17 (standalone components), TypeScript, HttpClient
 - **API style:** OAuth2 client-credentials compatible (`/api/v1/status`, employees, trips, next-actions, compliance-summary) — mirrors the public WorkFlex Open-API (employee provisioning, trip creation, compliance documents)
 - **Infra:** Dockerfile (Eclipse Temurin 17 JRE), GitHub Actions CI (backend-test + frontend-build)
+
+## Covered Countries & Country Packs
+
+| Country | Code | Key Authorities & Frameworks Covered | Rules As Of |
+|---|---|---|---|
+| Singapore | SG | Ministry of Manpower (MOM) Employment Pass (SGD 5,600/mo), COMPASS Framework (40 pts), IRAS 60-day short-term tax exemption | 2026-11-28 |
+| European Union & EEA | DE, FR, NL, ES, IT, etc. | A1 / Certificate of Coverage (Regulation (EC) 883/2004), Posted Worker Notification (Directive 96/71/EC) | 2026-11-28 |
+
+### Not covered yet
+
+- Singapore S Pass quota and monthly tier levy allocations are not yet modeled in the rules engine.
+- Singapore Tech.Pass and ONE Pass specialized executive criteria are deferred to enterprise immigration counsel.
+
+## Legal Disclaimer
+
+Not legal or tax advice - check the official source.
 
 ## The `rea` fix — traveler next-action inbox
 
@@ -28,7 +44,7 @@ This repo ships a fix for both:
 ```bash
 # Backend
 gradle test --no-daemon
-gradle bootRun --no-daemon
+gradle bootJar --no-daemon
 # Frontend
 cd frontend && npm ci && npm run build
 ```
@@ -36,8 +52,10 @@ cd frontend && npm ci && npm run build
 ## Tests
 
 - 5 engine/ledger/terminology unit tests
+- 5 Singapore MOM/IRAS country pack compliance tests
 - 2 controller MockMvc tests (status + next-actions)
 - 7 protocol unit tests (canonical hashing, proof validation, chain continuity, tamper detection)
+- 1 OIDC token validator test
 
 ## Verifiable Compliance Audit Protocol
 

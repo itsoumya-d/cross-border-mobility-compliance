@@ -4,6 +4,8 @@ import com.soumyadebnath.mobility.compliance.CreditLedger;
 import com.soumyadebnath.mobility.model.ComplianceSummary;
 import com.soumyadebnath.mobility.model.NextAction;
 import com.soumyadebnath.mobility.model.Trip;
+import com.soumyadebnath.mobility.packs.CountryPackRegistry;
+import com.soumyadebnath.mobility.packs.CountryRule;
 import com.soumyadebnath.mobility.terminology.TerminologyMap;
 import org.springframework.stereotype.Service;
 
@@ -15,8 +17,7 @@ import java.util.Set;
 /**
  * Deterministic rule engine for cross-border mobility compliance.
  * Covers A1/CoC, Posted Worker Notification (PWN), Permanent Establishment
- * risk, visa/immigration, tax exposure and duty of care — the same
- * dimensions WorkFlex models in its public compliance handbook.
+ * risk, visa/immigration, tax exposure, duty of care, and modular Country Packs (e.g. Singapore MOM/IRAS).
  */
 @Service
 public class ComplianceEngine {
@@ -26,6 +27,16 @@ public class ComplianceEngine {
     );
 
     private static final Set<String> VISA_DESTINATIONS = Set.of("US", "GB", "AE", "SG", "IN", "AU", "CA");
+
+    private final CountryPackRegistry packRegistry;
+
+    public ComplianceEngine() {
+        this(new CountryPackRegistry());
+    }
+
+    public ComplianceEngine(CountryPackRegistry packRegistry) {
+        this.packRegistry = packRegistry;
+    }
 
     public ComplianceSummary assess(Trip trip) {
         boolean pwnRequired = EU_PWN_DESTINATIONS.contains(trip.destinationCountry())
@@ -79,6 +90,65 @@ public class ComplianceEngine {
                 "VISA"
             ));
         }
+
+        // Modular Country Pack Evaluation (Singapore MOM / IRAS)
+        if ("SG".equalsIgnoreCase(trip.destinationCountry())) {
+            List<CountryRule> sgRules = packRegistry.getRules("SG");
+            docs.add("Singapore Mobility Compliance Dossier");
+
+            // Evaluate IRAS 60-day rule
+            if (trip.durationDays() <= 60) {
+                actions.add(new NextAction(
+                    "IRAS 60-day tax exemption clearance",
+                    "Under IRAS rules (https://www.iras.gov.sg/taxes/individual-income-tax/basics-of-individual-income-tax/tax-residency-and-tax-rates/individual-income-tax-rates), short-term employment of 60 days or less is exempt from Singapore employment tax.",
+                    "IRAS short-term exemption",
+                    "Tax exemption",
+                    "SYSTEM",
+                    start,
+                    false,
+                    "IRAS_60_EXEMPT"
+                ));
+            } else {
+                actions.add(new NextAction(
+                    "IRAS non-resident tax withholding review",
+                    "Stays exceeding 60 days are subject to IRAS non-resident tax at 15% flat or progressive rates (https://www.iras.gov.sg/taxes/individual-income-tax/basics-of-individual-income-tax/tax-residency-and-tax-rates/individual-income-tax-rates).",
+                    "IRAS tax withholding",
+                    "Wage tax",
+                    "HR",
+                    start.minusDays(14),
+                    true,
+                    "IRAS_TAX_REVIEW"
+                ));
+            }
+
+            // Evaluate MOM EP Salary threshold (SGD 5,600/month)
+            double monthlySalarySgd = (trip.annualSalaryCents() / 100.0) / 12.0;
+            if (monthlySalarySgd < 5600.0) {
+                actions.add(new NextAction(
+                    "MOM Employment Pass salary shortfall review",
+                    "Monthly salary of SGD " + Math.round(monthlySalarySgd) + " is below the MOM EP threshold of SGD 5,600 (https://www.mom.gov.sg/passes-and-permits/employment-pass/eligibility).",
+                    "EP salary threshold",
+                    "Visa & immigration",
+                    "HR",
+                    start.minusDays(30),
+                    true,
+                    "MOM_EP_SALARY"
+                ));
+            }
+
+            // COMPASS Points Assessment
+            actions.add(new NextAction(
+                "MOM COMPASS framework points verification",
+                "Verify candidate scores at least 40 points on COMPASS criteria (https://www.mom.gov.sg/passes-and-permits/employment-pass/eligibility/compass).",
+                "COMPASS verification",
+                "Visa & immigration",
+                "HR",
+                start.minusDays(21),
+                true,
+                "MOM_COMPASS"
+            ));
+        }
+
         if (peRisk) {
             actions.add(new NextAction(
                 "Permanent-establishment review",
@@ -118,5 +188,9 @@ public class ComplianceEngine {
         boolean compliant = actions.stream().filter(NextAction::required).count() <= 3;
         var price = CreditLedger.price(trip.durationDays(), pwnRequired, a1Required, visaRequired);
         return new ComplianceSummary(trip.id(), compliant, docs, actions, price.totalCredits(), price.explanation());
+    }
+
+    public CountryPackRegistry getPackRegistry() {
+        return packRegistry;
     }
 }

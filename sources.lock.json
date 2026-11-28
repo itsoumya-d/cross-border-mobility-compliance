@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "locked_at": "2026-11-28",
+  "disclaimer": "Not legal or tax advice - check the official source.",
+  "sources": [
+    {
+      "country": "SG",
+      "name": "Ministry of Manpower Singapore - Employment Pass Eligibility",
+      "source_url": "https://www.mom.gov.sg/passes-and-permits/employment-pass/eligibility",
+      "checked_on": "2026-11-28"
+    },
+    {
+      "country": "SG",
+      "name": "Ministry of Manpower Singapore - COMPASS Framework",
+      "source_url": "https://www.mom.gov.sg/passes-and-permits/employment-pass/eligibility/compass",
+      "checked_on": "2026-11-28"
+    },
+    {
+      "country": "SG",
+      "name": "Inland Revenue Authority of Singapore - Individual Income Tax Rates and Non-Resident Rules",
+      "source_url": "https://www.iras.gov.sg/taxes/individual-income-tax/basics-of-individual-income-tax/tax-residency-and-tax-rates/individual-income-tax-rates",
+      "checked_on": "2026-11-28"
+    }
+  ]
+}
